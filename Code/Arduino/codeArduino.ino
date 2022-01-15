@@ -2,7 +2,7 @@
 #include <LiquidCrystal.h>
 #define PIN_LED 8
 
-SoftwareSerial BTSerial(6, 7); // RX | TX  = > BT-TX=10 BT-RX=11
+SoftwareSerial BTSerial(6, 7); // RX | TX 
 LiquidCrystal lcd(12,11,5,4,3,2);
 
 int heures, minutes, secondes, hAlarme = 15, minutesAlarme = 45;
@@ -10,20 +10,89 @@ char heure[50] = "";
 
 void setup()
 {
+  pinMode(6, INPUT);
+  pinMode(7, OUTPUT);
   Serial.begin(9600);
-  Serial.println("Enter a command:");
+  Serial.println("==> Entrer une commande :");
   BTSerial.begin(9600);  // HC-05 9600 baud 
   pinMode(PIN_LED, OUTPUT);
   lcd.begin(16,2);
-  heures = 15;
-  minutes = 44;
-  secondes = 50;
 }
 
 void loop()
 {
   gestionHeure();
-  getMsg();  
+  int i = 0;
+  char someChar[32] = {0};
+  String messageComplet;
+  String msg;
+  String fonction;
+    
+  if(Serial.available()) {
+    do{
+      someChar[i++] = Serial.read();
+      delay(3);
+    }while (Serial.available() > 0);
+    BTSerial.println(someChar);
+    Serial.println(someChar);
+  }
+  
+  while(BTSerial.available()){
+    messageComplet = BTSerial.readString();
+
+    fonction = getMsgInfo(messageComplet, '_', 0);
+    msg = getMsgInfo(messageComplet, '_', 1);
+    
+    switch (fonction.toInt()){
+      case 1: //Afficher l'utilisateur connecté
+        getionBluetooth(msg);
+        Serial.println("L'utilisateur connecté est : ");
+        Serial.println(msg);
+        break;
+        
+      case 2: //changer l'heure de l'alarme
+        hAlarme = msg.toInt();
+        break;
+        
+      case 3: //changer les minutes de l'alargmes
+        minutesAlarme = msg.toInt();
+        break;
+        
+      case 4: //changer l'heure
+        heures = msg.toInt();
+        break;
+
+      case 5: //changer les minutes
+        minutes = msg.toInt();
+        break;
+        
+      case 6:
+        Serial.println("Actionnement du diffuseur");
+        pshiiiit();
+        break;
+        
+      default:
+        Serial.println("Aucune commande connu");
+        break;
+    }
+  
+    Serial.println(messageComplet);
+  }
+}
+
+
+String getMsgInfo(String data, char separator, int index){
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+      found++;
+      strIndex[0] = strIndex[1]+1;
+      strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
 void gestionHeure(){
@@ -56,56 +125,6 @@ void pshiiiit(){
   digitalWrite(PIN_LED,LOW);
   secondes++;
 }
-
-String getMsgInfo(String data, char separator, int index){
-  int found = 0;
-  int strIndex[] = {0, -1};
-  int maxIndex = data.length()-1;
-  for(int i=0; i<=maxIndex && found<=index; i++){
-    if(data.charAt(i)==separator || i==maxIndex){
-      found++;
-      strIndex[0] = strIndex[1]+1;
-      strIndex[1] = (i == maxIndex) ? i+1 : i;
-    }
-  }
-  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
-}
-
-void getMsg(){
-  String messageComplet;
-  String msg;
-  String fonction;
-  //message du type FONCTION_MSG??? ==> les "???" indiquent la fin du message
-  
-  while (BTSerial.available()){
-    messageComplet = BTSerial.readString();
-    Serial.println(messageComplet);
-  }
-  while (Serial.available()){
-    messageComplet = Serial.readString();
-    BTSerial.println(messageComplet);
-  }
-
-  //mes variables
-  fonction = getMsgInfo(messageComplet, '_', 0);
-  Serial.println(fonction);
-  msg = getMsgInfo(messageComplet, '_', 1);
-  Serial.println(msg);
-  
-  if(fonction == "user"){
-    getionBluetooth(msg);
-  }
-  else if(fonction == "heures"){
-    hAlarme = msg.toInt();
-  }
-  else if(fonction == "minutes"){
-    minutesAlarme = msg.toInt();
-  }
-  else if(fonction == "pshit"){
-    pshiiiit();
-  }
-}
-
 
 void getionBluetooth(String nom){
   lcd.setCursor(0,1);
