@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,10 +16,13 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.annotation.RequiresApi;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Controlling extends Activity {
     private static final String TAG = "BlueTest5-Controlling";
@@ -36,17 +40,18 @@ public class Controlling extends Activity {
 
     final static Calendar calendar = Calendar.getInstance();
 
-    final static String device_Name = "1_" + android.os.Build.MODEL + "_";
+    final static String device_Name = "1_" + android.os.Build.MODEL + "_" + "\n\r";
     final static String Aheure = "2_";
     final static String Aminute ="3_";
-    final static String heure = "4_" + calendar.get(Calendar.HOUR_OF_DAY) + "_";
-    final static String minute ="5_" + calendar.get(Calendar.MINUTE) + "_";
+    final static String heure = "4_" + calendar.get(Calendar.HOUR_OF_DAY) + "_" + "\n\r";
+    final static String minute ="5_" + calendar.get(Calendar.MINUTE) + "_" + "\n\r";
     final static String pshiit ="6_";
 
 
     private ProgressDialog progressDialog;
     ToggleButton On_Off;
     Button buttonpshit;
+    Button majHour;
     TimePicker timePicker;
 
 
@@ -59,6 +64,7 @@ public class Controlling extends Activity {
         // mBtnDisconnect = (Button) findViewById(R.id.btnDisconnect);
         //On_Off=(ToggleButton)findViewById(R.id.on_off);
         buttonpshit = (Button)findViewById(R.id.pshit);
+        majHour = (Button)findViewById(R.id.majHour);
 
         timePicker = (TimePicker) findViewById(R.id.timeAlarme);
         timePicker.setIs24HourView(true);
@@ -75,7 +81,6 @@ public class Controlling extends Activity {
             public void onClick(View v) {
                 try {
                     mBTSocket.getOutputStream().write(pshiit.getBytes());
-
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -83,59 +88,24 @@ public class Controlling extends Activity {
             }
         });
 
-        timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+        majHour.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
-            public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-                String heureAlarme = Aheure + hourOfDay + "_";
-                String minuteAlarme = Aminute + minute + "_";
+            public void onClick(View v) {
+                String heureAlarme = Aheure + timePicker.getHour() + "_" + "\n\r";
+                String minuteAlarme = Aminute + timePicker.getMinute() + "_"+ "\n\r";
                 try {
                     mBTSocket.getOutputStream().write(heureAlarme.getBytes());
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-                try {
+                    TimeUnit.SECONDS.sleep(2);
                     mBTSocket.getOutputStream().write(minuteAlarme.getBytes());
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
         });
-
-        /*
-        On_Off.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-
-                    try {
-                        mBTSocket.getOutputStream().write(on.getBytes());
-
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-
-                }
-                else{
-                    try {
-                        mBTSocket.getOutputStream().write(off.getBytes());
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-
-                }
-            }
-        });
-        */
 
     }
-
-
-
 
     private class ReadInput implements Runnable {
 
@@ -308,26 +278,14 @@ public class Controlling extends Activity {
                 mIsBluetoothConnected = true;
                 try {
                     mBTSocket.getOutputStream().write(device_Name.getBytes());
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-                try {
+                    TimeUnit.SECONDS.sleep(2);
                     mBTSocket.getOutputStream().write(heure.getBytes());
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-
-                try {
+                    TimeUnit.SECONDS.sleep(2);
                     mBTSocket.getOutputStream().write(minute.getBytes());
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
-
                 mReadThread = new ReadInput();
             }
 

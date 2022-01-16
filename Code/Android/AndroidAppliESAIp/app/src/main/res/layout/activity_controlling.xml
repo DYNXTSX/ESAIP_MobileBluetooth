@@ -38,6 +38,15 @@
             android:timePickerMode="clock"/>
 
         <Button
+            android:id="@+id/majHour"
+            android:layout_width="300dp"
+            android:layout_height="80dp"
+            android:gravity="center"
+            android:text="Mettre à jour l'heure"
+            android:layout_centerHorizontal="true"
+            />
+
+        <Button
             android:id="@+id/pshit"
             android:layout_width="300dp"
             android:layout_height="80dp"
