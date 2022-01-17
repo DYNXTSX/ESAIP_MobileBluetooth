@@ -46,6 +46,7 @@ public class Controlling extends Activity {
     final static String heure = "4_" + calendar.get(Calendar.HOUR_OF_DAY) + "_" + "\n\r";
     final static String minute ="5_" + calendar.get(Calendar.MINUTE) + "_" + "\n\r";
     final static String pshiit ="6_";
+    final static String device_leave = "1_" + "" + "_" + "\n\r";
 
 
     private ProgressDialog progressDialog;
@@ -296,6 +297,12 @@ public class Controlling extends Activity {
     @Override
     protected void onDestroy() {
         // TODO Auto-generated method stub
+        try {
+            mBTSocket.getOutputStream().write(device_leave.getBytes());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
 }
